@@ -1,10 +1,89 @@
-{% extends 'uploadfilesapp/base.html'%}
+{% extends 'uploadfilesapp/base.html' %}
 
-{%block content%}
+{% block content %}
 <h1>Hello</h1>
 <form action="" method="post" enctype="multipart/form-data">
-    {%csrf_token%}
-    {{employee_form.as_p}}
-    <button type="submit">Submit</button>
+  {% csrf_token %}
+  {{ employee_form.as_p }}
+
+  <button
+    type="button"
+    onclick="addCertificateInput()"
+    class="btn btn-primary mt-3"
+  >
+    Add Certificate
+  </button>
+
+  <div id="certificate-input-wrapper" class="mt-3"></div>
+
+  <button type="submit" class="btn btn-success mt-3">Submit</button>
 </form>
-{%endblock%}
+
+<script>
+  // Persist the counter and max outside the function
+  let certificateCounter = 0;
+  const maxCertificates = 9;
+
+  function addCertificateInput() {
+    if (certificateCounter >= maxCertificates) {
+      alert(`You can only add up to ${maxCertificates} certificates.`);
+      return;
+    }
+
+    const wrapper = document.getElementById('certificate-input-wrapper');
+    const group = document.createElement('div');
+    group.classList.add('input-group', 'mt-3');
+
+    // Unique ID for label ↔ input
+    const inputId = `certificate_file_${certificateCounter}`;
+
+    // File input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.name = 'certificate_files[]';           // array notation
+    fileInput.id = inputId;
+    fileInput.classList.add('custom-file-input');
+
+    // Label
+    const fileLabel = document.createElement('label');
+    fileLabel.classList.add('custom-file-label');
+    fileLabel.setAttribute('for', inputId);
+    fileLabel.textContent = 'Choose file';
+
+    // Update label on change
+    fileInput.addEventListener('change', function(){
+      const names = Array.from(this.files)
+                         .map(f => f.name)
+                         .join(', ');
+      fileLabel.textContent = names;
+    });
+
+    // Wrap input+label
+    const customDiv = document.createElement('div');
+    customDiv.classList.add('custom-file');
+    customDiv.append(fileInput, fileLabel);
+
+    // Remove button
+    const appendDiv = document.createElement('div');
+    appendDiv.classList.add('input-group-append');
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.classList.add('btn', 'btn-danger');
+    removeBtn.textContent = 'Remove';
+
+    removeBtn.addEventListener('click', () => {
+      wrapper.removeChild(group);
+      certificateCounter--;
+    });
+
+    appendDiv.appendChild(removeBtn);
+
+    // Assemble and insert
+    group.append(customDiv, appendDiv);
+    wrapper.appendChild(group);
+
+    certificateCounter++;
+  }
+</script>
+{% endblock %}
